@@ -1,0 +1,27 @@
+[
+  {
+    "question": "Which component contains the main pizza slider logic?",
+    "expected_file": "src/components/Hero.jsx",
+    "expected_answer": "The main pizza slider logic is in the Hero component."
+  },
+  {
+    "question": "How does the move function change the pizza rotation?",
+    "expected_file": "src/components/Hero.jsx",
+    "expected_answer": "The move function changes rotation by 90 degrees depending on the direction."
+  },
+  {
+    "question": "Which state variable tracks the currently active pizza?",
+    "expected_file": "src/components/Hero.jsx",
+    "expected_answer": "The activeIndex state variable tracks the currently active pizza."
+  },
+  {
+    "question": "How is the active pizza selected from the pizza array?",
+    "expected_file": "src/components/Hero.jsx",
+    "expected_answer": "The active pizza is selected using pizza[activeIndex]."
+  },
+  {
+    "question": "How does the slider handle left and right navigation?",
+    "expected_file": "src/components/Hero.jsx",
+    "expected_answer": "Left and right navigation call the move function with the corresponding direction."
+  }
+]

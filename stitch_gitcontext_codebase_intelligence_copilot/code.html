@@ -1,0 +1,2859 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="shell-type" content="web_dashboard"/>
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+
+<style>
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    overscroll-behavior: none;
+  }
+
+  main > :first-child {
+    margin-top: 0 !important;
+  }
+
+  main > :last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+</style>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+    // your existing GitContext JavaScript
+</script>
+
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-dim": "#10141a",
+        "primary-fixed-dim": "#4edea3",
+        "on-primary-fixed": "#002113",
+        "secondary-fixed": "#acedff",
+        "surface-container-high": "#262a31",
+        "surface-container-highest": "#31353c",
+        "surface-bright": "#353940",
+        "on-background": "#dfe2eb",
+        "tertiary-fixed-dim": "#d0bcff",
+        "surface-container-low": "#181c22",
+        "tertiary-container": "#b090ff",
+        "secondary-container": "#03b5d3",
+        "surface-container": "#1c2026",
+        "error": "#ffb4ab",
+        "tertiary": "#d0bcff",
+        "background": "#10141a",
+        "surface-variant": "#31353c",
+        "error-container": "#93000a",
+        "on-secondary": "#003640",
+        "on-secondary-container": "#00424e",
+        "primary-fixed": "#6ffbbe",
+        "primary": "#4edea3",
+        "on-error-container": "#ffdad6",
+        "on-primary-fixed-variant": "#005236",
+        "primary-container": "#10b981",
+        "on-surface": "#dfe2eb",
+        "surface": "#10141a",
+        "on-surface-variant": "#bbcabf",
+        "outline": "#86948a",
+        "on-primary": "#003824",
+        "secondary-fixed-dim": "#4cd7f6",
+        "secondary": "#4cd7f6",
+        "surface-tint": "#4edea3"
+      },
+
+      borderRadius: {
+        DEFAULT: "0.125rem",
+        lg: "0.25rem",
+        xl: "0.5rem",
+        full: "0.75rem"
+      },
+
+      spacing: {
+        "margin-mobile": "1rem",
+        "space-xl": "1.75rem",
+        "space-lg": "1.25rem",
+        "margin": "1.5rem",
+        "gutter-mobile": "0.75rem",
+        "gutter": "1rem",
+        "space-xs": "0.25rem",
+        "space-md": "0.75rem",
+        "space-sm": "0.5rem"
+      },
+
+      fontFamily: {
+        body: ["Geist"],
+        mono: ["JetBrains Mono"],
+        headline: ["Geist"]
+      }
+    }
+  }
+};
+</script>
+</head>
+
+<body class="bg-surface text-on-surface antialiased selection:bg-primary-container">
+
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 h-full w-72 bg-[#0a0e14] z-50 flex flex-col justify-between">
+
+  <div>
+
+    <div class="h-16 px-4 flex items-center justify-between bg-[#10141a]">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+          <span class="material-symbols-outlined text-[#003824]">account_tree</span>
+        </div>
+
+        <span class="text-lg font-semibold tracking-tight">
+          GitContext
+        </span>
+      </div>
+
+      <span class="text-[10px] px-2 py-1 rounded-lg bg-[#31353c] text-[#bbcabf] font-mono">
+        v1.0.0
+      </span>
+    </div>
+
+    <div class="p-3">
+      <div class="p-3 rounded-xl bg-[#181c22] flex flex-col gap-2">
+
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase tracking-wider text-[#86948a] font-mono">
+            Target Workspace
+          </span>
+
+          <span class="relative flex h-2 w-2">
+            <span id="workspace-ping"
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75">
+            </span>
+
+            <span id="workspace-dot"
+                  class="relative inline-flex rounded-full h-2 w-2 bg-primary">
+            </span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1">
+          <span class="material-symbols-outlined text-secondary text-sm">
+            account_tree
+          </span>
+
+          <span id="workspace-name"
+                class="text-[11px] text-[#dfe2eb] truncate font-mono">
+            No repository indexed
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1 text-[#bbcabf]">
+          <span class="material-symbols-outlined text-xs">
+            fork_right
+          </span>
+
+          <span id="workspace-branch"
+                class="text-[10px] font-mono">
+            -
+          </span>
+
+          <span class="text-[10px] text-[#86948a]">
+            •
+          </span>
+
+          <span id="workspace-chunks"
+                class="text-[10px] text-primary font-mono">
+            0 Chunks
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <nav class="flex flex-col gap-1 px-2">
+
+      <a href="#dashboard"
+         class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#262a31] text-primary font-semibold">
+        <span class="material-symbols-outlined text-base">
+          layers
+        </span>
+
+        <span class="text-sm">
+          Dashboard & Repos
+        </span>
+      </a>
+
+      <a href="#chat"
+         class="flex items-center gap-2 px-3 py-2 rounded-xl text-[#bbcabf] hover:bg-[#1c2026] hover:text-white transition">
+        <span class="material-symbols-outlined text-base">
+          terminal
+        </span>
+
+        <span class="text-sm">
+          Codebase Chat
+        </span>
+      </a>
+
+      <a href="#sources"
+         class="flex items-center gap-2 px-3 py-2 rounded-xl text-[#bbcabf] hover:bg-[#1c2026] hover:text-white transition">
+        <span class="material-symbols-outlined text-base">
+          data_object
+        </span>
+
+        <span class="text-sm">
+          Grounding Sources
+        </span>
+      </a>
+
+      <a href="#telemetry"
+         class="flex items-center gap-2 px-3 py-2 rounded-xl text-[#bbcabf] hover:bg-[#1c2026] hover:text-white transition">
+        <span class="material-symbols-outlined text-base">
+          monitoring
+        </span>
+
+        <span class="text-sm">
+          Repository State & Telemetry
+        </span>
+      </a>
+
+    </nav>
+
+  </div>
+
+  <div class="p-3 bg-[#10141a]">
+
+    <div class="flex items-center justify-between text-[#bbcabf] mb-2">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-xs">
+          memory
+        </span>
+
+        <span class="text-[10px] font-mono">
+          Qdrant Vector DB
+        </span>
+      </div>
+
+      <span id="qdrant-status"
+            class="text-[10px] text-[#86948a] font-mono">
+        CHECKING
+      </span>
+    </div>
+
+    <button id="health-check-btn"
+            class="w-full flex items-center justify-center gap-1 py-2 px-2 rounded-lg bg-[#262a31] text-[#dfe2eb] hover:bg-[#353940] text-xs transition">
+
+      <span class="material-symbols-outlined text-xs">
+        sync
+      </span>
+
+      Check API
+    </button>
+
+  </div>
+
+</aside>
+
+
+<!-- MAIN -->
+<div class="pl-72">
+
+  <header class="fixed top-0 left-72 right-0 h-16 bg-[#10141a]/90 backdrop-blur-xl z-40 flex items-center justify-between px-5">
+
+    <div class="flex items-center gap-3">
+
+      <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-[#181c22]">
+
+        <span id="api-dot"
+              class="h-1.5 w-1.5 rounded-full bg-[#86948a]">
+        </span>
+
+        <span id="api-status"
+              class="text-[10px] font-mono text-[#86948a]">
+          API: Checking...
+        </span>
+
+        <span class="text-[10px] text-[#86948a]">
+          |
+        </span>
+
+        <span id="api-response"
+              class="text-[10px] font-mono text-[#86948a]">
+          GET /health
+        </span>
+
+      </div>
+
+    </div>
+
+    <div class="flex items-center gap-2">
+
+      <button id="switch-repo-btn"
+              class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#1c2026] hover:bg-[#262a31] text-[#bbcabf] text-xs transition">
+
+        <span class="material-symbols-outlined text-sm">
+          swap_horiz
+        </span>
+
+        Switch Repo
+      </button>
+
+      <button id="github-sync-btn"
+              class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-[#003824] text-xs font-semibold">
+
+        <span class="material-symbols-outlined text-sm">
+          commit
+        </span>
+
+        GitHub Sync
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <main id="dashboard" class="w-full pt-16 min-h-screen bg-surface">
+
+    <div class="px-5 py-5 flex flex-col gap-5 max-w-[1720px] mx-auto">
+
+      <!-- HERO -->
+      <section class="relative overflow-hidden rounded-xl bg-[#181c22] p-5">
+
+        <div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-primary/5 blur-3xl"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+          <div>
+
+            <div class="flex items-center gap-2 text-[#86948a] text-[10px] uppercase tracking-wider font-mono">
+
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+
+              GitContext Engine
+
+              <span>•</span>
+
+              <span class="text-secondary">
+                Tree-Sitter
+              </span>
+
+            </div>
+
+            <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight mt-2">
+              End-to-End Codebase Intelligence & Developer Copilot
+            </h1>
+
+            <p class="text-sm text-[#bbcabf] max-w-3xl mt-2">
+              Turn a GitHub repository into a searchable knowledge base using
+              code-aware chunking, embeddings, hybrid retrieval, reranking,
+              grounded answers and file-level citations.
+            </p>
+
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 bg-[#0a0e14] px-3 py-2 rounded-lg">
+
+            <span id="hero-health-dot"
+                  class="h-2 w-2 rounded-full bg-[#86948a]">
+            </span>
+
+            <span id="hero-health"
+                  class="text-[10px] font-mono text-[#86948a]">
+              GET /health: Checking
+            </span>
+
+            <span class="text-[#86948a]">
+              •
+            </span>
+
+            <span class="text-[10px] font-mono text-secondary">
+              Qdrant Vector Store
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- INDEX + PAYLOAD -->
+      <section class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+
+        <div class="xl:col-span-8 flex flex-col gap-4 bg-[#181c22] p-5 rounded-xl">
+
+          <div class="flex items-center justify-between">
+
+            <div class="flex items-center gap-2">
+
+              <span class="material-symbols-outlined text-primary text-base">
+                cloud_download
+              </span>
+
+              <h2 class="font-semibold">
+                Connect & Index Repository
+              </h2>
+
+            </div>
+
+            <span class="text-[10px] text-[#bbcabf] font-mono bg-[#1c2026] px-2 py-1 rounded">
+              POST /repositories/index
+            </span>
+
+          </div>
+
+
+          <div class="flex flex-col gap-2">
+
+            <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-2">
+
+              <div class="relative flex-1">
+
+                <span class="material-symbols-outlined absolute left-3 top-2.5 text-[#86948a] text-base">
+                  terminal
+                </span>
+
+                <input
+                  id="repo-url-input"
+                  class="w-full bg-[#0a0e14] text-sm text-[#dfe2eb] pl-10 pr-28 py-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="https://github.com/org/repo"
+                  type="text"
+                  value="https://github.com/octocat/Hello-World"
+                />
+
+                <div class="absolute right-2 top-2 flex items-center gap-1 bg-[#1c2026] px-2 py-1 rounded">
+
+                  <span id="url-dot"
+                        class="w-1.5 h-1.5 rounded-full bg-primary">
+                  </span>
+
+                  <span id="url-status"
+                        class="text-[9px] text-primary font-mono">
+                    Valid URL
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <div class="relative">
+
+                <select
+                  id="branch-select"
+                  class="appearance-none bg-[#0a0e14] text-sm text-[#dfe2eb] pl-3 pr-8 py-2.5 rounded-lg focus:outline-none cursor-pointer">
+
+                  <option value="main">
+                    main
+                  </option>
+
+                  <option value="master">
+                    master
+                  </option>
+
+                  <option value="develop">
+                    develop
+                  </option>
+
+                  <option value="release/v2">
+                    release/v2
+                  </option>
+
+                </select>
+
+                <span class="material-symbols-outlined absolute right-2 top-3 text-xs text-[#86948a] pointer-events-none">
+                  expand_more
+                </span>
+
+              </div>
+
+
+              <button
+                id="trigger-index-btn"
+                type="button"
+                class="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-[#003824] rounded-lg font-semibold text-xs hover:bg-primary-fixed transition-all">
+
+                <span class="material-symbols-outlined text-sm">
+                  bolt
+                </span>
+
+                <span id="index-button-text">
+                  Connect & Index
+                </span>
+
+              </button>
+
+            </div>
+
+
+            <div class="flex items-center gap-2 flex-wrap">
+
+              <span class="text-[10px] text-[#86948a] uppercase tracking-wider">
+                Presets:
+              </span>
+
+              <button onclick="setPreset('https://github.com/octocat/Hello-World','main')"
+                      class="text-[10px] text-[#bbcabf] bg-[#1c2026] hover:bg-[#262a31] px-2 py-1 rounded font-mono">
+                Hello-World
+              </button>
+
+              <button onclick="setPreset('https://github.com/fastapi/fastapi','master')"
+                      class="text-[10px] text-[#bbcabf] bg-[#1c2026] hover:bg-[#262a31] px-2 py-1 rounded font-mono">
+                fastapi
+              </button>
+
+              <button onclick="setPreset('https://github.com/pallets/flask','main')"
+                      class="text-[10px] text-[#bbcabf] bg-[#1c2026] hover:bg-[#262a31] px-2 py-1 rounded font-mono">
+                flask
+              </button>
+
+              <button onclick="setPreset('https://github.com/encode/starlette','master')"
+                      class="text-[10px] text-[#bbcabf] bg-[#1c2026] hover:bg-[#262a31] px-2 py-1 rounded font-mono">
+                starlette
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+
+            <label class="flex items-center gap-2 bg-[#0a0e14] p-2 rounded-lg cursor-pointer">
+
+              <input id="ast-checkbox"
+                     checked
+                     class="w-3.5 h-3.5 accent-emerald-500"
+                     type="checkbox"/>
+
+              <span class="text-[10px] font-mono">
+                Parse AST Symbols
+              </span>
+
+            </label>
+
+
+            <label class="flex items-center gap-2 bg-[#0a0e14] p-2 rounded-lg cursor-pointer">
+
+              <input id="markdown-checkbox"
+                     checked
+                     class="w-3.5 h-3.5 accent-emerald-500"
+                     type="checkbox"/>
+
+              <span class="text-[10px] font-mono">
+                Include Markdown Docs
+              </span>
+
+            </label>
+
+
+            <div class="flex items-center gap-2 bg-[#0a0e14] p-2 rounded-lg">
+
+              <span class="text-[10px] font-mono text-[#86948a]">
+                Embed:
+              </span>
+
+              <span class="text-[10px] font-mono text-secondary">
+                BGE-small
+              </span>
+
+            </div>
+
+
+            <div class="flex items-center justify-between bg-[#0a0e14] p-2 rounded-lg">
+
+              <span class="text-[10px] font-mono text-[#86948a]">
+                Dimension
+              </span>
+
+              <span class="text-[10px] font-mono text-secondary">
+                384
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- PAYLOAD -->
+        <div class="xl:col-span-4 flex flex-col justify-between bg-[#181c22] p-5 rounded-xl">
+
+          <div>
+
+            <div class="flex items-center justify-between mb-2">
+
+              <span class="text-[10px] text-[#86948a] uppercase tracking-wider font-mono">
+                Dispatch Payload Preview
+              </span>
+
+              <span id="payload-status"
+                    class="text-[10px] text-primary font-mono">
+                Ready
+              </span>
+
+            </div>
+
+
+            <div class="bg-[#0a0e14] p-3 rounded-lg font-mono text-xs overflow-x-auto">
+
+<pre class="text-[#bbcabf]"><span>{</span>
+  <span class="text-secondary">"repository_url"</span>:
+    <span class="text-primary" id="payload-repo-preview">"https://github.com/octocat/Hello-World"</span>,
+
+  <span class="text-secondary">"branch"</span>:
+    <span class="text-primary" id="payload-branch-preview">"main"</span>,
+
+  <span class="text-secondary">"ast_enrichment"</span>:
+    <span class="text-primary" id="payload-ast-preview">true</span>,
+
+  <span class="text-secondary">"include_markdown"</span>:
+    <span class="text-primary" id="payload-markdown-preview">true</span>
+<span>}</span></pre>
+
+            </div>
+
+          </div>
+
+
+          <div class="flex items-center justify-between text-[#bbcabf] text-[10px] pt-3">
+
+            <div class="flex items-center gap-1">
+
+              <span class="material-symbols-outlined text-xs text-primary">
+                verified_user
+              </span>
+
+              Backend:
+              <span class="font-mono">
+                FastAPI
+              </span>
+
+            </div>
+
+            <span class="font-mono text-[#86948a]">
+              Qdrant :6333
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- STATS -->
+      <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+        <div class="bg-[#181c22] p-4 rounded-xl">
+
+          <div class="flex items-center justify-between">
+
+            <span class="text-[10px] text-[#86948a] uppercase tracking-wider">
+              Active Target
+            </span>
+
+            <span class="material-symbols-outlined text-secondary text-sm">
+              hub
+            </span>
+
+          </div>
+
+          <div class="mt-2">
+
+            <div id="active-target"
+                 class="text-sm font-semibold font-mono truncate">
+              No repository
+            </div>
+
+            <span class="text-xs text-[#bbcabf]">
+              Waiting for indexing
+            </span>
+
+          </div>
+
+          <div class="flex items-center gap-2 mt-2">
+
+            <span id="active-branch"
+                  class="text-[10px] px-1.5 py-0.5 rounded bg-[#1c2026] text-[#bbcabf] font-mono">
+              branch: -
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="bg-[#181c22] p-4 rounded-xl">
+
+          <div class="flex items-center justify-between">
+
+            <span class="text-[10px] text-[#86948a] uppercase tracking-wider">
+              State Pipeline
+            </span>
+
+            <span id="state-icon"
+                  class="material-symbols-outlined text-[#86948a] text-sm">
+              pending
+            </span>
+
+          </div>
+
+          <div class="mt-2">
+
+            <div id="index-state"
+                 class="text-sm font-bold font-mono text-[#86948a]">
+              NOT INDEXED
+            </div>
+
+            <span id="state-description"
+                  class="text-xs text-[#bbcabf]">
+              Repository not indexed
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="bg-[#181c22] p-4 rounded-xl">
+
+          <div class="flex items-center justify-between">
+
+            <span class="text-[10px] text-[#86948a] uppercase tracking-wider">
+              Indexed Chunks
+            </span>
+
+            <span class="material-symbols-outlined text-secondary text-sm">
+              memory
+            </span>
+
+          </div>
+
+          <div class="mt-2">
+
+            <span id="chunk-count"
+                  class="text-sm font-semibold font-mono">
+              0 Chunks
+            </span>
+
+            <div class="text-xs text-[#bbcabf]">
+              Indexed by Qdrant
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="bg-[#181c22] p-4 rounded-xl">
+
+          <div class="flex items-center justify-between">
+
+            <span class="text-[10px] text-[#86948a] uppercase tracking-wider">
+              Last Index
+            </span>
+
+            <span class="material-symbols-outlined text-[#86948a] text-sm">
+              history
+            </span>
+
+          </div>
+
+          <div class="mt-2">
+
+            <span id="last-index"
+                  class="text-sm font-semibold font-mono">
+              Never
+            </span>
+
+            <div id="index-duration"
+                 class="text-xs text-[#bbcabf]">
+              -
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- TRACKED REPOSITORIES -->
+      <section class="bg-[#181c22] p-5 rounded-xl">
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+
+          <div class="flex items-center gap-2">
+
+            <span class="material-symbols-outlined text-base text-[#86948a]">
+              database
+            </span>
+
+            <h2 class="font-semibold">
+              Tracked Repositories
+            </h2>
+
+            <span id="repo-count"
+                  class="text-[10px] px-2 py-0.5 rounded-full bg-[#1c2026] text-[#bbcabf] font-mono">
+              0 Total
+            </span>
+
+          </div>
+
+          <button id="clear-repositories-btn"
+                  class="text-[10px] font-mono px-3 py-1 rounded bg-[#1c2026] text-[#bbcabf] hover:bg-[#262a31]">
+            Clear UI
+          </button>
+
+        </div>
+
+
+        <div class="overflow-x-auto">
+
+          <table class="w-full text-left">
+
+            <thead>
+
+              <tr class="bg-[#1c2026] text-[#bbcabf] text-[10px] uppercase tracking-wider">
+
+                <th class="py-2.5 px-3 rounded-l-lg">
+                  Repository
+                </th>
+
+                <th class="py-2.5 px-3">
+                  Branch
+                </th>
+
+                <th class="py-2.5 px-3">
+                  Index Status
+                </th>
+
+                <th class="py-2.5 px-3">
+                  Chunks
+                </th>
+
+                <th class="py-2.5 px-3">
+                  Last Sync
+                </th>
+
+                <th class="py-2.5 px-3 rounded-r-lg text-right">
+                  Action
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="repositories-table-body">
+
+              <tr id="empty-repositories-row">
+
+                <td colspan="6"
+                    class="py-10 text-center text-sm text-[#86948a]">
+
+                  <span class="material-symbols-outlined text-2xl block mb-2">
+                    database
+                  </span>
+
+                  No repositories indexed yet.
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- CHAT -->
+      <section id="chat"
+               class="bg-[#181c22] p-5 rounded-xl">
+
+        <div class="flex items-center gap-2 mb-3">
+
+          <span class="material-symbols-outlined text-primary">
+            chat
+          </span>
+
+          <h2 class="font-semibold">
+            Codebase Chat
+          </h2>
+
+        </div>
+
+
+        <div class="flex items-center gap-2 bg-[#0a0e14] p-2 rounded-xl">
+
+          <input
+            id="question-input"
+            class="flex-1 bg-transparent text-sm text-[#dfe2eb] px-2 py-2 focus:outline-none"
+            placeholder="Ask a question about the repository..."
+            type="text"/>
+
+          <button
+            id="ask-button"
+            class="flex items-center gap-1 px-4 py-2 rounded-lg bg-primary text-[#003824] font-semibold text-xs disabled:opacity-40 disabled:cursor-not-allowed">
+
+            Query
+
+            <span class="material-symbols-outlined text-xs">
+                arrow_forward
+            </span>
+
+        </button>
+        </div>
+
+
+        <div id="answer-box"
+             class="hidden mt-4 bg-[#0a0e14] rounded-xl p-4">
+
+          <div class="flex items-center gap-2 mb-2">
+
+            <span class="material-symbols-outlined text-primary text-sm">
+              auto_awesome
+            </span>
+
+            <span class="text-xs font-semibold">
+              GitContext Answer
+            </span>
+
+          </div>
+
+          <div id="answer-text"
+               class="text-sm text-[#dfe2eb] whitespace-pre-wrap">
+          </div>
+
+
+          <div class="mt-4">
+
+            <div class="text-[10px] uppercase tracking-wider text-[#86948a] mb-2">
+              Citations
+            </div>
+
+            <div id="citation-list"
+                 class="flex flex-col gap-2">
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- GROUNDING -->
+      <section id="sources"
+               class="bg-[#181c22] p-5 rounded-xl">
+
+        <div class="flex items-center gap-2 mb-3">
+
+          <span class="material-symbols-outlined text-secondary">
+            data_object
+          </span>
+
+          <h2 class="font-semibold">
+            Grounding Sources
+          </h2>
+
+        </div>
+
+        <p class="text-sm text-[#bbcabf]">
+          Answers are grounded using retrieved repository chunks and include
+          file-level citations from the indexed codebase.
+        </p>
+
+      </section>
+
+
+      <!-- TELEMETRY -->
+      <section id="telemetry"
+               class="bg-[#181c22] p-5 rounded-xl">
+
+        <div class="flex items-center gap-2 mb-3">
+
+          <span class="material-symbols-outlined text-secondary">
+            monitoring
+          </span>
+
+          <h2 class="font-semibold">
+            Repository State & Telemetry
+          </h2>
+
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+          <div class="bg-[#0a0e14] p-3 rounded-lg">
+
+            <div class="text-[10px] text-[#86948a] uppercase">
+              API
+            </div>
+
+            <div id="telemetry-api"
+                 class="text-sm font-mono mt-1">
+              Checking...
+            </div>
+
+          </div>
+
+
+          <div class="bg-[#0a0e14] p-3 rounded-lg">
+
+            <div class="text-[10px] text-[#86948a] uppercase">
+              Vector Store
+            </div>
+
+            <div id="telemetry-qdrant"
+                 class="text-sm font-mono mt-1">
+              Checking...
+            </div>
+
+          </div>
+
+
+          <div class="bg-[#0a0e14] p-3 rounded-lg">
+
+            <div class="text-[10px] text-[#86948a] uppercase">
+              Last Operation
+            </div>
+
+            <div id="telemetry-operation"
+                 class="text-sm font-mono mt-1">
+              None
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- BOTTOM QUERY -->
+      <div class="sticky bottom-4 z-30 w-full">
+
+        <div class="bg-[#181c22]/95 backdrop-blur-xl p-2 rounded-xl shadow-xl flex items-center justify-between gap-3">
+
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+
+            <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#1c2026] text-primary">
+
+              <span class="material-symbols-outlined text-base">
+                chat_bubble
+              </span>
+
+            </div>
+
+            <input
+              id="bottom-question-input"
+              class="w-full bg-transparent text-sm text-[#dfe2eb] placeholder:text-[#86948a] focus:outline-none"
+              placeholder="Ask about the repository..."
+              type="text"/>
+
+          </div>
+
+
+          <button
+            id="bottom-ask-button"
+            disabled
+            class="flex items-center gap-1 px-4 py-2 rounded-lg bg-primary text-[#003824] text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed">
+
+            Query
+
+            <span class="material-symbols-outlined text-xs">
+              arrow_forward
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   GITCONTEXT FRONTEND
+   ========================================================= */
+
+const API_BASE = "http://127.0.0.1:8000";
+
+
+/* =========================================================
+   APPLICATION STATE
+   ========================================================= */
+
+let apiConnected = false;
+let indexedRepository = null;
+let indexedRepositoryUrl = null;
+let indexedBranch = null;
+let indexedChunks = 0;
+
+
+/* =========================================================
+   DOM ELEMENTS
+   ========================================================= */
+
+const repoInput = document.getElementById("repo-url-input");
+const branchSelect = document.getElementById("branch-select");
+
+const indexButton = document.getElementById("trigger-index-btn");
+const indexButtonText = document.getElementById("index-button-text");
+
+const questionInput = document.getElementById("question-input");
+const bottomQuestionInput = document.getElementById("bottom-question-input");
+
+const askButton = document.getElementById("ask-button");
+const bottomAskButton = document.getElementById("bottom-ask-button");
+
+const healthButton = document.getElementById("health-check-btn");
+
+const astCheckbox = document.getElementById("ast-checkbox");
+const markdownCheckbox = document.getElementById("markdown-checkbox");
+
+
+/* =========================================================
+   HELPER: SAFE JSON RESPONSE
+   ========================================================= */
+
+async function readJsonResponse(response) {
+
+  const contentType =
+    response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+
+    return await response.json();
+
+  }
+
+  const text =
+    await response.text();
+
+  return {
+    detail: text || `HTTP ${response.status}`
+  };
+
+}
+
+
+/* =========================================================
+   HELPER: ERROR MESSAGE
+   ========================================================= */
+
+function getErrorMessage(data, response) {
+
+  if (!data) {
+    return `HTTP ${response.status}`;
+  }
+
+  if (typeof data.detail === "string") {
+    return data.detail;
+  }
+
+  if (Array.isArray(data.detail)) {
+
+    return data.detail
+      .map(item => item.msg || JSON.stringify(item))
+      .join(", ");
+
+  }
+
+  if (typeof data.message === "string") {
+    return data.message;
+  }
+
+  if (typeof data.error === "string") {
+    return data.error;
+  }
+
+  return `HTTP ${response.status}`;
+
+}
+
+
+/* =========================================================
+   HELPER: GITHUB URL VALIDATION
+   ========================================================= */
+
+function isValidGitHubUrl(value) {
+
+  return /^https:\/\/github\.com\/[^/]+\/[^/]+\/?$/.test(
+    value.trim()
+  );
+
+}
+
+
+/* =========================================================
+   PRESET
+   ========================================================= */
+
+function setPreset(url, branch) {
+
+  repoInput.value = url;
+
+  branchSelect.value = branch;
+
+  updatePayloadPreview();
+
+  updateUrlStatus();
+
+}
+
+
+/* =========================================================
+   PAYLOAD PREVIEW
+   ========================================================= */
+
+function updatePayloadPreview() {
+
+  document.getElementById("payload-repo-preview").textContent =
+    `"${repoInput.value}"`;
+
+  document.getElementById("payload-branch-preview").textContent =
+    `"${branchSelect.value}"`;
+
+  document.getElementById("payload-ast-preview").textContent =
+    astCheckbox.checked ? "true" : "false";
+
+  document.getElementById("payload-markdown-preview").textContent =
+    markdownCheckbox.checked ? "true" : "false";
+
+}
+
+
+repoInput.addEventListener(
+  "input",
+  () => {
+
+    updatePayloadPreview();
+
+    updateUrlStatus();
+
+  }
+);
+
+
+branchSelect.addEventListener(
+  "change",
+  updatePayloadPreview
+);
+
+
+astCheckbox.addEventListener(
+  "change",
+  updatePayloadPreview
+);
+
+
+markdownCheckbox.addEventListener(
+  "change",
+  updatePayloadPreview
+);
+
+
+/* =========================================================
+   URL STATUS
+   ========================================================= */
+
+function updateUrlStatus() {
+
+  const value =
+    repoInput.value.trim();
+
+  const valid =
+    isValidGitHubUrl(value);
+
+  const status =
+    document.getElementById("url-status");
+
+  const dot =
+    document.getElementById("url-dot");
+
+
+  if (valid) {
+
+    status.textContent =
+      "Valid URL";
+
+    status.className =
+      "text-[9px] text-primary font-mono";
+
+    dot.className =
+      "w-1.5 h-1.5 rounded-full bg-primary";
+
+  } else {
+
+    status.textContent =
+      "Invalid URL";
+
+    status.className =
+      "text-[9px] text-[#ffb4ab] font-mono";
+
+    dot.className =
+      "w-1.5 h-1.5 rounded-full bg-[#ffb4ab]";
+
+  }
+
+}
+
+
+/* =========================================================
+   QUERY BUTTON STATE
+   ========================================================= */
+
+function updateQueryButtons() {
+
+  const enabled =
+    apiConnected &&
+    isValidGitHubUrl(repoInput.value.trim());
+
+  askButton.disabled =
+    !enabled;
+
+  bottomAskButton.disabled =
+    !enabled;
+
+}
+
+
+/* =========================================================
+   HEALTH CHECK
+   ========================================================= */
+
+async function checkApiHealth() {
+
+  const apiStatus =
+    document.getElementById("api-status");
+
+  const apiResponse =
+    document.getElementById("api-response");
+
+  const apiDot =
+    document.getElementById("api-dot");
+
+  const heroHealth =
+    document.getElementById("hero-health");
+
+  const heroHealthDot =
+    document.getElementById("hero-health-dot");
+
+  const telemetryApi =
+    document.getElementById("telemetry-api");
+
+  const qdrantStatus =
+    document.getElementById("qdrant-status");
+
+  const telemetryQdrant =
+    document.getElementById("telemetry-qdrant");
+
+
+  apiStatus.textContent =
+    "API: Checking...";
+
+  apiResponse.textContent =
+    "GET /health";
+
+  telemetryApi.textContent =
+    "Checking...";
+
+
+  try {
+
+    const start =
+      performance.now();
+
+
+    const response =
+      await fetch(
+        `${API_BASE}/health`,
+        {
+          method: "GET",
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
+
+
+    const latency =
+      Math.round(
+        performance.now() - start
+      );
+
+
+    const data =
+      await readJsonResponse(response);
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        getErrorMessage(data, response)
+      );
+
+    }
+
+
+    apiConnected = true;
+
+
+    apiStatus.textContent =
+      "API: Connected";
+
+    apiStatus.className =
+      "text-[10px] font-mono text-primary";
+
+    apiDot.className =
+      "h-1.5 w-1.5 rounded-full bg-primary";
+
+
+    apiResponse.textContent =
+      `GET /health 200 OK - ${latency}ms`;
+
+
+    heroHealth.textContent =
+      `GET /health: 200 OK • ${latency}ms`;
+
+    heroHealth.className =
+      "text-[10px] font-mono text-primary";
+
+    heroHealthDot.className =
+      "h-2 w-2 rounded-full bg-primary";
+
+
+    telemetryApi.textContent =
+      "Connected";
+
+    telemetryApi.className =
+      "text-sm font-mono mt-1 text-primary";
+
+
+    /*
+      IMPORTANT:
+      /health currently proves FastAPI is alive.
+      It does NOT prove Qdrant is directly reachable.
+      Therefore we don't falsely claim Qdrant is available here.
+    */
+
+    qdrantStatus.textContent =
+      "BACKEND";
+
+    qdrantStatus.className =
+      "text-[10px] text-secondary font-mono";
+
+
+    telemetryQdrant.textContent =
+      "Used by backend";
+
+    telemetryQdrant.className =
+      "text-sm font-mono mt-1 text-secondary";
+
+
+    updateQueryButtons();
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "Health check failed:",
+      error
+    );
+
+
+    apiConnected = false;
+
+
+    apiStatus.textContent =
+      "API: Disconnected";
+
+    apiStatus.className =
+      "text-[10px] font-mono text-[#ffb4ab]";
+
+    apiDot.className =
+      "h-1.5 w-1.5 rounded-full bg-[#ffb4ab]";
+
+
+    apiResponse.textContent =
+      "GET /health failed";
+
+
+    heroHealth.textContent =
+      "GET /health: API unavailable";
+
+    heroHealth.className =
+      "text-[10px] font-mono text-[#ffb4ab]";
+
+    heroHealthDot.className =
+      "h-2 w-2 rounded-full bg-[#ffb4ab]";
+
+
+    telemetryApi.textContent =
+      "Disconnected";
+
+    telemetryApi.className =
+      "text-sm font-mono mt-1 text-[#ffb4ab]";
+
+
+    qdrantStatus.textContent =
+      "UNKNOWN";
+
+    qdrantStatus.className =
+      "text-[10px] text-[#ffb4ab] font-mono";
+
+
+    telemetryQdrant.textContent =
+      "Backend unavailable";
+
+    telemetryQdrant.className =
+      "text-sm font-mono mt-1 text-[#ffb4ab]";
+
+
+    updateQueryButtons();
+
+
+    return false;
+
+  }
+
+}
+
+
+healthButton.addEventListener(
+  "click",
+  checkApiHealth
+);
+
+
+/* =========================================================
+   INDEX REPOSITORY
+   ========================================================= */
+
+indexButton.addEventListener(
+  "click",
+  async () => {
+
+    const repositoryUrl =
+      repoInput.value.trim();
+
+
+    if (!repositoryUrl) {
+
+      showOperationError(
+        "Please enter a GitHub repository URL."
+      );
+
+      return;
+
+    }
+
+
+    if (!isValidGitHubUrl(repositoryUrl)) {
+
+      showOperationError(
+        "Please enter a valid GitHub repository URL."
+      );
+
+      return;
+
+    }
+
+
+    if (!apiConnected) {
+
+      const connected =
+        await checkApiHealth();
+
+      if (!connected) {
+
+        showOperationError(
+          "GitContext API is not running. Start FastAPI on port 8000 first."
+        );
+
+        return;
+
+      }
+
+    }
+
+
+    setIndexingState(true);
+
+
+    const operationStart =
+      performance.now();
+
+
+    try {
+
+      console.log(
+        "Sending index request:",
+        {
+          repository_url: repositoryUrl
+        }
+      );
+
+
+      const response =
+        await fetch(
+          `${API_BASE}/repositories/index`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+
+            body: JSON.stringify({
+              repository_url: repositoryUrl
+            })
+          }
+        );
+
+
+      const data =
+        await readJsonResponse(response);
+
+
+      console.log(
+        "Index response:",
+        data
+      );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          getErrorMessage(data, response)
+        );
+
+      }
+
+
+      const duration =
+        (
+          (performance.now() - operationStart) /
+          1000
+        ).toFixed(2);
+
+
+      const repository =
+        data.repository ||
+        getRepositoryName(repositoryUrl);
+
+
+      const message =
+        data.message ||
+        "Repository indexed successfully.";
+
+
+      updateRepositoryUI(
+        repositoryUrl,
+        repository,
+        message,
+        duration
+      );
+
+
+      document.getElementById(
+        "payload-status"
+      ).textContent =
+        "Success";
+
+
+      document.getElementById(
+        "payload-status"
+      ).className =
+        "text-[10px] text-primary font-mono";
+
+
+      document.getElementById(
+        "telemetry-operation"
+      ).textContent =
+        `Indexed ${repository} in ${duration}s`;
+
+
+      showSuccessMessage(
+        message
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Indexing failed:",
+        error
+      );
+
+
+      document.getElementById(
+        "payload-status"
+      ).textContent =
+        "Failed";
+
+
+      document.getElementById(
+        "payload-status"
+      ).className =
+        "text-[10px] text-[#ffb4ab] font-mono";
+
+
+      document.getElementById(
+        "telemetry-operation"
+      ).textContent =
+        `Index failed: ${error.message}`;
+
+
+      document.getElementById(
+        "index-state"
+      ).textContent =
+        "ERROR";
+
+
+      document.getElementById(
+        "index-state"
+      ).className =
+        "text-sm font-bold font-mono text-[#ffb4ab]";
+
+
+      document.getElementById(
+        "state-description"
+      ).textContent =
+        error.message;
+
+
+      document.getElementById(
+        "state-icon"
+      ).textContent =
+        "error";
+
+
+      document.getElementById(
+        "state-icon"
+      ).className =
+        "material-symbols-outlined text-[#ffb4ab] text-sm";
+
+
+      showOperationError(
+        `Indexing failed: ${error.message}`
+      );
+
+
+    } finally {
+
+      setIndexingState(false);
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   INDEXING BUTTON STATE
+   ========================================================= */
+
+function setIndexingState(isIndexing) {
+
+  indexButton.disabled =
+    isIndexing;
+
+  indexButton.classList.toggle(
+    "opacity-60",
+    isIndexing
+  );
+
+  indexButton.classList.toggle(
+    "cursor-not-allowed",
+    isIndexing
+  );
+
+
+  if (isIndexing) {
+
+    indexButtonText.textContent =
+      "Indexing...";
+
+
+    document.getElementById(
+      "payload-status"
+    ).textContent =
+      "Sending...";
+
+
+    document.getElementById(
+      "index-state"
+    ).textContent =
+      "INDEXING";
+
+
+    document.getElementById(
+      "index-state"
+    ).className =
+      "text-sm font-bold font-mono text-secondary";
+
+
+    document.getElementById(
+      "state-description"
+    ).textContent =
+      "Reading repository and creating embeddings";
+
+
+    document.getElementById(
+      "state-icon"
+    ).textContent =
+      "sync";
+
+
+    document.getElementById(
+      "state-icon"
+    ).className =
+      "material-symbols-outlined text-secondary text-sm";
+
+
+  } else {
+
+    indexButtonText.textContent =
+      "Connect & Index";
+
+  }
+
+}
+
+
+/* =========================================================
+   UPDATE REPOSITORY UI
+   ========================================================= */
+
+function updateRepositoryUI(
+  repositoryUrl,
+  repository,
+  message,
+  duration
+) {
+
+  const branch =
+    branchSelect.value;
+
+
+  const chunkMatch =
+    message.match(
+      /(\d+)\s+chunks/i
+    );
+
+
+  const chunks =
+    chunkMatch
+      ? Number(chunkMatch[1])
+      : 0;
+
+
+  indexedRepository =
+    repository;
+
+
+  indexedRepositoryUrl =
+    repositoryUrl;
+
+
+  indexedBranch =
+    branch;
+
+
+  indexedChunks =
+    chunks;
+
+
+  document.getElementById(
+    "workspace-name"
+  ).textContent =
+    repository;
+
+
+  document.getElementById(
+    "workspace-branch"
+  ).textContent =
+    branch;
+
+
+  document.getElementById(
+    "workspace-chunks"
+  ).textContent =
+    `${chunks} Chunks`;
+
+
+  document.getElementById(
+    "active-target"
+  ).textContent =
+    repository;
+
+
+  document.getElementById(
+    "active-branch"
+  ).textContent =
+    `branch: ${branch}`;
+
+
+  document.getElementById(
+    "index-state"
+  ).textContent =
+    "INDEXED";
+
+
+  document.getElementById(
+    "index-state"
+  ).className =
+    "text-sm font-bold font-mono text-primary";
+
+
+  document.getElementById(
+    "state-description"
+  ).textContent =
+    "Repository successfully indexed";
+
+
+  document.getElementById(
+    "state-icon"
+  ).textContent =
+    "check_circle";
+
+
+  document.getElementById(
+    "state-icon"
+  ).className =
+    "material-symbols-outlined text-primary text-sm";
+
+
+  document.getElementById(
+    "chunk-count"
+  ).textContent =
+    `${chunks} Chunks`;
+
+
+  document.getElementById(
+    "last-index"
+  ).textContent =
+    "Just now";
+
+
+  document.getElementById(
+    "index-duration"
+  ).textContent =
+    `Duration: ${duration}s`;
+
+
+  document.getElementById(
+    "workspace-dot"
+  ).className =
+    "relative inline-flex rounded-full h-2 w-2 bg-primary";
+
+
+  document.getElementById(
+    "workspace-ping"
+  ).className =
+    "animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75";
+
+
+  addRepositoryRow(
+    repository,
+    branch,
+    chunks
+  );
+
+
+  updateQueryButtons();
+
+}
+
+
+/* =========================================================
+   REPOSITORY NAME
+   ========================================================= */
+
+function getRepositoryName(url) {
+
+  return url
+    .replace(/\/+$/, "")
+    .split("/")
+    .pop()
+    .replace(/\.git$/, "");
+
+}
+
+
+/* =========================================================
+   ADD REPOSITORY ROW
+   ========================================================= */
+
+function addRepositoryRow(
+  repository,
+  branch,
+  chunks
+) {
+
+  const tableBody =
+    document.getElementById(
+      "repositories-table-body"
+    );
+
+
+  const emptyRow =
+    document.getElementById(
+      "empty-repositories-row"
+    );
+
+
+  if (emptyRow) {
+    emptyRow.remove();
+  }
+
+
+  const existingRows =
+    tableBody.querySelectorAll("tr");
+
+
+  existingRows.forEach(
+    row => {
+
+      const repoCell =
+        row.querySelector(
+          "[data-repository]"
+        );
+
+
+      if (
+        repoCell &&
+        repoCell.textContent.trim() === repository
+      ) {
+
+        row.remove();
+
+      }
+
+    }
+  );
+
+
+  const row =
+    document.createElement("tr");
+
+
+  row.className =
+    "border-t border-[#262a31] hover:bg-[#1c2026] transition";
+
+
+  row.innerHTML = `
+
+    <td class="py-4 px-3">
+
+      <div class="flex items-center gap-2">
+
+        <span class="material-symbols-outlined text-primary text-base">
+          source
+        </span>
+
+        <div>
+
+          <div data-repository
+               class="text-xs font-mono font-semibold">
+            ${escapeHtml(repository)}
+          </div>
+
+          <div class="text-[10px] text-[#86948a]">
+            GitHub Repository
+          </div>
+
+        </div>
+
+      </div>
+
+    </td>
+
+
+    <td class="py-4 px-3">
+
+      <span class="text-[10px] font-mono">
+        ${escapeHtml(branch)}
+      </span>
+
+    </td>
+
+
+    <td class="py-4 px-3">
+
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1c2026] text-primary font-mono text-[10px]">
+
+        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+
+        INDEXED
+
+      </div>
+
+    </td>
+
+
+    <td class="py-4 px-3">
+
+      <span class="text-[10px] font-mono text-[#bbcabf]">
+        ${chunks}
+      </span>
+
+    </td>
+
+
+    <td class="py-4 px-3">
+
+      <span class="text-[10px] font-mono text-[#86948a]">
+        Just now
+      </span>
+
+    </td>
+
+
+    <td class="py-4 px-3 text-right">
+
+      <button
+        onclick="openChatForRepository('${escapeAttribute(repository)}')"
+        class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-primary text-[#003824] text-[10px] font-semibold">
+
+        <span class="material-symbols-outlined text-xs">
+          forum
+        </span>
+
+        Open Chat
+
+      </button>
+
+    </td>
+
+  `;
+
+
+  tableBody.prepend(row);
+
+
+  const totalRows =
+    tableBody.querySelectorAll("tr").length;
+
+
+  document.getElementById(
+    "repo-count"
+  ).textContent =
+    `${totalRows} Total`;
+
+}
+
+
+/* =========================================================
+   OPEN CHAT
+   ========================================================= */
+
+function openChatForRepository(repository) {
+
+  document.getElementById(
+    "question-input"
+  ).focus();
+
+
+  document.getElementById(
+    "question-input"
+  ).placeholder =
+    `Ask about ${repository}...`;
+
+
+  document.getElementById(
+    "chat"
+  ).scrollIntoView({
+    behavior: "smooth"
+  });
+
+}
+
+
+/* =========================================================
+   ASK QUESTION
+   ========================================================= */
+
+async function askQuestion(question) {
+
+  question =
+    question.trim();
+
+
+  if (!question) {
+
+    showOperationError(
+      "Please enter a question."
+    );
+
+    return;
+
+  }
+
+
+  if (!apiConnected) {
+
+    const connected =
+      await checkApiHealth();
+
+    if (!connected) {
+
+      showOperationError(
+        "GitContext API is not connected."
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  const repositoryUrl =
+  indexedRepositoryUrl ||
+  repoInput.value.trim();
+
+if (!repositoryUrl) {
+
+  showOperationError(
+    "Please enter a GitHub repository URL."
+  );
+
+  return;
+
+}
+
+
+  setQueryState(true);
+
+
+  const answerBox =
+    document.getElementById(
+      "answer-box"
+    );
+
+
+  answerBox.classList.remove(
+    "hidden"
+  );
+
+
+  document.getElementById(
+    "answer-text"
+  ).textContent =
+    "Searching repository context...";
+
+
+  document.getElementById(
+    "citation-list"
+  ).innerHTML =
+    "";
+
+
+  try {
+
+    console.log(
+      "Sending ask request:",
+      {
+        question,
+        repository_url: repositoryUrl
+      }
+    );
+
+
+    const response =
+      await fetch(
+        `${API_BASE}/ask`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+
+          body: JSON.stringify({
+            question: question,
+            repository_url: repositoryUrl
+          })
+        }
+      );
+
+
+    const data =
+      await readJsonResponse(response);
+
+
+    console.log(
+      "Ask response:",
+      data
+    );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        getErrorMessage(data, response)
+      );
+
+    }
+
+
+    document.getElementById(
+  "answer-text"
+).innerHTML =
+  marked.parse(
+    data.answer ||
+    "No answer returned."
+  );
+
+
+    renderCitations(
+      Array.isArray(data.citations)
+        ? data.citations
+        : []
+    );
+
+
+    document.getElementById(
+      "telemetry-operation"
+    ).textContent =
+      "Question answered successfully";
+
+
+  } catch (error) {
+
+    console.error(
+      "Question failed:",
+      error
+    );
+
+
+    document.getElementById(
+      "answer-text"
+    ).textContent =
+      `Error: ${error.message}`;
+
+
+    document.getElementById(
+      "citation-list"
+    ).innerHTML =
+      "";
+
+
+    document.getElementById(
+      "telemetry-operation"
+    ).textContent =
+      `Question failed: ${error.message}`;
+
+  } finally {
+
+    setQueryState(false);
+
+  }
+
+}
+
+
+/* =========================================================
+   QUERY BUTTON STATE
+   ========================================================= */
+
+function setQueryState(isQuerying) {
+
+  askButton.disabled =
+    isQuerying || !indexedRepository;
+
+
+  bottomAskButton.disabled =
+    isQuerying || !indexedRepository;
+
+
+  if (isQuerying) {
+
+    askButton.innerHTML =
+      `Thinking...
+       <span class="material-symbols-outlined text-xs">
+         progress_activity
+       </span>`;
+
+
+    bottomAskButton.innerHTML =
+      `Thinking...
+       <span class="material-symbols-outlined text-xs">
+         progress_activity
+       </span>`;
+
+  } else {
+
+    askButton.innerHTML =
+      `Query
+       <span class="material-symbols-outlined text-xs">
+         arrow_forward
+       </span>`;
+
+
+    bottomAskButton.innerHTML =
+      `Query
+       <span class="material-symbols-outlined text-xs">
+         arrow_forward
+       </span>`;
+
+  }
+
+}
+
+
+/* =========================================================
+   CITATIONS
+   ========================================================= */
+
+function renderCitations(citations) {
+
+  const list =
+    document.getElementById(
+      "citation-list"
+    );
+
+
+  list.innerHTML =
+    "";
+
+
+  if (!citations.length) {
+
+    list.innerHTML =
+      `
+      <div class="text-xs text-[#86948a]">
+        No citations returned.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  citations.forEach(
+    citation => {
+
+      const card =
+        document.createElement("div");
+
+
+      card.className =
+        "bg-[#181c22] border border-[#262a31] rounded-lg p-3";
+
+
+      const repository =
+        citation.repository || "-";
+
+
+      const filePath =
+        citation.file_path || "unknown";
+
+
+      const symbol =
+        citation.symbol_name || "-";
+
+
+      const startLine =
+        citation.start_line ?? "-";
+
+
+      const endLine =
+        citation.end_line ?? "-";
+
+
+      card.innerHTML = `
+
+        <div class="flex items-center gap-2">
+
+          <span class="material-symbols-outlined text-secondary text-sm">
+            description
+          </span>
+
+          <span class="text-xs font-mono text-primary">
+            ${escapeHtml(filePath)}
+          </span>
+
+        </div>
+
+
+        <div class="mt-2 text-[10px] text-[#bbcabf] font-mono">
+
+          <div>
+            Repository:
+            ${escapeHtml(repository)}
+          </div>
+
+          <div class="mt-1">
+            Symbol:
+            ${escapeHtml(symbol)}
+          </div>
+
+          <div class="mt-1">
+            Lines:
+            ${escapeHtml(startLine)}-${escapeHtml(endLine)}
+          </div>
+
+        </div>
+
+      `;
+
+
+      list.appendChild(card);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   CLEAR UI
+   ========================================================= */
+
+document
+  .getElementById(
+    "clear-repositories-btn"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      const tableBody =
+        document.getElementById(
+          "repositories-table-body"
+        );
+
+
+      tableBody.innerHTML = `
+
+        <tr id="empty-repositories-row">
+
+          <td colspan="6"
+              class="py-10 text-center text-sm text-[#86948a]">
+
+            <span class="material-symbols-outlined text-2xl block mb-2">
+              database
+            </span>
+
+            No repositories indexed yet.
+
+          </td>
+
+        </tr>
+
+      `;
+
+
+      document.getElementById(
+        "repo-count"
+      ).textContent =
+        "0 Total";
+
+    }
+  );
+
+
+/* =========================================================
+   CHAT EVENTS
+   ========================================================= */
+
+askButton.addEventListener(
+  "click",
+  () => {
+
+    askQuestion(
+      questionInput.value
+    );
+
+  }
+);
+
+
+bottomAskButton.addEventListener(
+  "click",
+  () => {
+
+    const question =
+      bottomQuestionInput.value.trim() ||
+      questionInput.value.trim();
+
+
+    askQuestion(
+      question
+    );
+
+  }
+);
+
+
+questionInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Enter") {
+
+      event.preventDefault();
+
+      askQuestion(
+        questionInput.value
+      );
+
+    }
+
+  }
+);
+
+
+bottomQuestionInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Enter") {
+
+      event.preventDefault();
+
+      askQuestion(
+        bottomQuestionInput.value
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   SWITCH REPOSITORY
+   ========================================================= */
+
+document
+  .getElementById(
+    "switch-repo-btn"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      repoInput.focus();
+
+      repoInput.select();
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    }
+  );
+
+
+/* =========================================================
+   GITHUB SYNC
+   ========================================================= */
+
+document
+  .getElementById(
+    "github-sync-btn"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      indexButton.click();
+
+    }
+  );
+
+
+/* =========================================================
+   SUCCESS MESSAGE
+   ========================================================= */
+
+function showSuccessMessage(message) {
+
+  showToast(
+    message,
+    "success"
+  );
+
+}
+
+
+/* =========================================================
+   ERROR MESSAGE
+   ========================================================= */
+
+function showOperationError(message) {
+
+  console.error(
+    message
+  );
+
+
+  showToast(
+    message,
+    "error"
+  );
+
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function showToast(
+  message,
+  type = "success"
+) {
+
+  const existing =
+    document.getElementById(
+      "gitcontext-toast"
+    );
+
+
+  if (existing) {
+    existing.remove();
+  }
+
+
+  const toast =
+    document.createElement("div");
+
+
+  toast.id =
+    "gitcontext-toast";
+
+
+  const isError =
+    type === "error";
+
+
+  toast.className =
+    `fixed bottom-6 right-6 z-[100] max-w-md px-4 py-3 rounded-xl shadow-2xl border ${
+      isError
+        ? "bg-[#2a1014] border-[#690005] text-[#ffb4ab]"
+        : "bg-[#10251d] border-[#005236] text-[#6ffbbe]"
+    }`;
+
+
+  toast.innerHTML = `
+
+    <div class="flex items-start gap-2">
+
+      <span class="material-symbols-outlined text-sm">
+        ${isError ? "error" : "check_circle"}
+      </span>
+
+      <div class="text-xs font-mono leading-5">
+        ${escapeHtml(message)}
+      </div>
+
+    </div>
+
+  `;
+
+
+  document.body.appendChild(
+    toast
+  );
+
+
+  setTimeout(
+    () => {
+
+      toast.remove();
+
+    },
+    5000
+  );
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHtml(value) {
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
+   ESCAPE ATTRIBUTE
+   ========================================================= */
+
+function escapeAttribute(value) {
+
+  return String(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'");
+
+}
+
+
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
+
+updatePayloadPreview();
+
+updateUrlStatus();
+
+updateQueryButtons();
+
+checkApiHealth();
+
+</script>
+
+</body>
+</html>
