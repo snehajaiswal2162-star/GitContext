@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 
 from qdrant_client.models import (
@@ -9,6 +12,8 @@ from qdrant_client.models import (
     MatchValue,
 )
 
+load_dotenv()
+
 
 class QdrantVectorStore:
 
@@ -17,10 +22,21 @@ class QdrantVectorStore:
         host: str = "localhost",
         port: int = 6333,
     ):
-        self.client = QdrantClient(
-            host=host,
-            port=port,
-        )
+        qdrant_url = os.getenv("QDRANT_URL")
+        qdrant_api_key = os.getenv("QDRANT_API_KEY")
+
+        # Use Qdrant Cloud when credentials are available.
+        if qdrant_url and qdrant_api_key:
+            self.client = QdrantClient(
+                url=qdrant_url,
+                api_key=qdrant_api_key,
+            )
+        else:
+            # Fall back to local Qdrant for development.
+            self.client = QdrantClient(
+                host=host,
+                port=port,
+            )
 
     def test_connection(self):
         return self.client.get_collections()
