@@ -1,4 +1,3 @@
-
 from functools import lru_cache
 import time
 
@@ -6,9 +5,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.embedding.embedder import Embedder
 from backend.app.vector_store.qdrant_client import QdrantVectorStore
-from backend.app.retrieval.reranker import Reranker
 from backend.app.retrieval.hybrid import HybridRetriever
 from backend.app.rag.pipeline import prepare_rag_input
 from backend.app.rag.answer import generate_answer
@@ -25,15 +22,21 @@ from backend.app.ingestion.git_history import get_latest_commit
 from backend.app.ingestion.index_state import save_index_state
 
 
+# ============================================================
 # Cached components
+# Heavy ML imports are intentionally lazy-loaded so that
+# FastAPI can start without immediately loading PyTorch/models.
+# ============================================================
 
 @lru_cache(maxsize=1)
 def get_embedder():
+    from backend.app.embedding.embedder import Embedder
     return Embedder()
 
 
 @lru_cache(maxsize=1)
 def get_reranker():
+    from backend.app.retrieval.reranker import Reranker
     return Reranker()
 
 
@@ -42,7 +45,9 @@ def get_vector_store():
     return QdrantVectorStore()
 
 
+# ============================================================
 # FastAPI application
+# ============================================================
 
 app = FastAPI(
     title="GitContext API",
@@ -60,7 +65,9 @@ app.add_middleware(
 )
 
 
+# ============================================================
 # Request and response models
+# ============================================================
 
 class QuestionRequest(BaseModel):
     question: str = Field(
@@ -99,7 +106,9 @@ class IndexResponse(BaseModel):
     message: str
 
 
+# ============================================================
 # Health and welcome endpoints
+# ============================================================
 
 @app.get("/")
 def root():
@@ -116,13 +125,14 @@ def health_check():
     }
 
 
+# ============================================================
 # Repository indexing endpoint
+# ============================================================
 
 @app.post(
     "/repositories/index",
     response_model=IndexResponse,
 )
-@app.post("/repositories/index")
 def index_repository(request: IndexRequest):
 
     repo_path = clone_repository(
@@ -142,7 +152,12 @@ def index_repository(request: IndexRequest):
         repository
     )
 
+    # --------------------------------------------------------
+    # Check whether existing index is stale
+    # --------------------------------------------------------
+
     if indexed_commit is not None:
+
         latest_commit = get_latest_commit(
             repo_path
         )
@@ -171,14 +186,81 @@ def index_repository(request: IndexRequest):
             ),
         )
 
+    # --------------------------------------------------------
+    # Full repository indexing
+    # --------------------------------------------------------
+
     vector_store = get_vector_store()
 
     vector_store.delete_repository_chunks(
         repository=repository
     )
 
+    files = filter_files(
+        scan_repository(repo_path)
+    )
 
+    chunks = []
+
+    for path in files:
+
+        content = read_file(path)
+
+        if not content.strip():
+            continue
+
+        document = Document(
+            repository=repository,
+            file_path=path.relative_to(repo_path),
+            content=content,
+            language=detect_language(path),
+        )
+
+        chunks.extend(
+            chunk_document(document)
+        )
+
+    if not chunks:
+        return IndexResponse(
+            repository=repository,
+            message="No supported repository content found.",
+        )
+
+    # Lazy-load the embedding model only when indexing is needed
+    embedder = get_embedder()
+
+    for chunk in chunks:
+
+        vector = embedder.encode(
+            chunk.content
+        )
+
+        vector_store.insert_chunk(
+            vector=vector,
+            chunk=chunk,
+        )
+
+    latest_commit = get_latest_commit(
+        repo_path
+    )
+
+    save_index_state(
+        repository=repository,
+        commit_hash=latest_commit["commit_hash"],
+    )
+
+    return IndexResponse(
+        repository=repository,
+        message=(
+            f"Repository indexed successfully. "
+            f"{len(chunks)} chunks stored."
+        ),
+    )
+
+
+# ============================================================
 # Repository question endpoint
+# ============================================================
 
 @app.post(
     "/ask",
@@ -195,9 +277,9 @@ def ask_question(request: QuestionRequest):
 
     total_start = time.time()
 
-    # --------------------------------
-    # 1. Load indexed repository chunks
-    # --------------------------------
+    # --------------------------------------------------------
+    # 1. Load repository chunks
+    # --------------------------------------------------------
 
     start = time.time()
 
@@ -230,7 +312,7 @@ def ask_question(request: QuestionRequest):
         )
 
     print(
-        f"⏱ Load repository chunks: "
+        f"Load repository chunks: "
         f"{time.time() - start:.2f}s"
     )
 
@@ -243,13 +325,15 @@ def ask_question(request: QuestionRequest):
             citations=[],
         )
 
-    # --------------------------------
+    # --------------------------------------------------------
     # 2. Hybrid retrieval
-    # --------------------------------
+    # --------------------------------------------------------
 
     start = time.time()
 
+    # Heavy embedding model loads only when /ask is called
     embedder = get_embedder()
+
     vector_store = get_vector_store()
 
     hybrid_retriever = HybridRetriever(
@@ -265,22 +349,25 @@ def ask_question(request: QuestionRequest):
     )
 
     print(
-        f"⏱ Hybrid retrieval: "
+        f"Hybrid retrieval: "
         f"{time.time() - start:.2f}s"
     )
 
     if not results:
         return QuestionResponse(
-            answer="No relevant repository context was found.",
+            answer=(
+                "No relevant repository context was found."
+            ),
             citations=[],
         )
 
-    # --------------------------------
+    # --------------------------------------------------------
     # 3. Reranking
-    # --------------------------------
+    # --------------------------------------------------------
 
     start = time.time()
 
+    # Heavy cross-encoder loads only when reranking is needed
     reranker = get_reranker()
 
     results = reranker.rerank(
@@ -290,32 +377,36 @@ def ask_question(request: QuestionRequest):
     )
 
     print(
-        f"⏱ Reranking: "
+        f"Reranking: "
         f"{time.time() - start:.2f}s"
     )
 
     if not results:
         return QuestionResponse(
-            answer="No relevant repository context was found.",
+            answer=(
+                "No relevant repository context was found."
+            ),
             citations=[],
         )
 
-    # --------------------------------
+    # --------------------------------------------------------
     # 4. RAG context
-    # --------------------------------
+    # --------------------------------------------------------
 
     start = time.time()
 
-    rag_input = prepare_rag_input(results)
+    rag_input = prepare_rag_input(
+        results
+    )
 
     print(
-        f"⏱ RAG context: "
+        f"RAG context: "
         f"{time.time() - start:.2f}s"
     )
 
-    # --------------------------------
-    # 5. Gemini
-    # --------------------------------
+    # --------------------------------------------------------
+    # 5. Gemini answer generation
+    # --------------------------------------------------------
 
     start = time.time()
 
@@ -325,12 +416,12 @@ def ask_question(request: QuestionRequest):
     )
 
     print(
-        f"⏱ Gemini: "
+        f"Gemini: "
         f"{time.time() - start:.2f}s"
     )
 
     print(
-        f"⏱ TOTAL: "
+        f"TOTAL: "
         f"{time.time() - total_start:.2f}s"
     )
 
