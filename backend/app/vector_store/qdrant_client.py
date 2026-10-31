@@ -77,6 +77,12 @@ class QdrantVectorStore:
                 f"Qdrant collection already exists: {collection_name}"
             )
 
+        self.client.create_payload_index(
+        collection_name=collection_name,
+        field_name="repository",
+        field_schema="keyword",
+)
+
     def insert_chunk(
         self,
         point_id: str,
