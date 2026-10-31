@@ -48,7 +48,7 @@ class QdrantVectorStore:
         self.client.create_collection(
             collection_name=collection_name,
             vectors_config=VectorParams(
-                size=384,
+                size=768,
                 distance=Distance.COSINE,
             ),
         )
@@ -64,7 +64,7 @@ class QdrantVectorStore:
             self.client.create_collection(
                 collection_name=collection_name,
                 vectors_config=VectorParams(
-                    size=384,
+                    size=768,
                     distance=Distance.COSINE,
                 ),
             )
