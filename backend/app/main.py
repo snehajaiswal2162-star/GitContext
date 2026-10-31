@@ -1,5 +1,7 @@
 from functools import lru_cache
 import time
+import hashlib
+import uuid
 
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
@@ -20,8 +22,23 @@ from backend.app.ingestion.clone import clone_repository
 
 from backend.app.ingestion.git_history import get_latest_commit
 from backend.app.ingestion.index_state import save_index_state
-from backend.app.ingestion.reindex import generate_chunk_id
 
+
+def generate_chunk_id(repository, file_path, chunk):
+    unique_string = (
+        f"{repository}:"
+        f"{file_path}:"
+        f"{chunk.chunk_type}:"
+        f"{chunk.symbol_name}:"
+        f"{chunk.start_line}:"
+        f"{chunk.end_line}"
+    )
+
+    hash_value = hashlib.sha256(
+        unique_string.encode("utf-8")
+    ).hexdigest()
+
+    return str(uuid.UUID(hash_value[:32]))
 
 # ============================================================
 # Cached components
