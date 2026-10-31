@@ -53,6 +53,30 @@ class QdrantVectorStore:
             ),
         )
 
+    def ensure_collection(
+        self,
+        collection_name: str = "gitcontext_chunks",
+    ):
+        """
+        Create the collection only if it does not already exist.
+        """
+        if not self.client.collection_exists(collection_name):
+            self.client.create_collection(
+                collection_name=collection_name,
+                vectors_config=VectorParams(
+                    size=384,
+                    distance=Distance.COSINE,
+                ),
+            )
+
+            print(
+                f"Created Qdrant collection: {collection_name}"
+            )
+        else:
+            print(
+                f"Qdrant collection already exists: {collection_name}"
+            )
+
     def insert_chunk(
         self,
         point_id: str,

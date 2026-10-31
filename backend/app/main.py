@@ -20,6 +20,7 @@ from backend.app.ingestion.clone import clone_repository
 
 from backend.app.ingestion.git_history import get_latest_commit
 from backend.app.ingestion.index_state import save_index_state
+from backend.app.ingestion.reindex import generate_chunk_id
 
 
 # ============================================================
@@ -42,7 +43,9 @@ def get_reranker():
 
 @lru_cache(maxsize=1)
 def get_vector_store():
-    return QdrantVectorStore()
+    store = QdrantVectorStore()
+    store.ensure_collection()
+    return store
 
 
 # ============================================================
@@ -235,7 +238,15 @@ def index_repository(request: IndexRequest):
             chunk.content
         )
 
+        point_id = generate_chunk_id(
+        repository=repository,
+        file_path=chunk.file_path,
+        chunk=chunk,
+    )
+
+
         vector_store.insert_chunk(
+            point_id=point_id,
             vector=vector,
             chunk=chunk,
         )
