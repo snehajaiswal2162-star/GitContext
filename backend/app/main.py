@@ -1,4 +1,6 @@
+
 from functools import lru_cache
+
 import time
 import hashlib
 import uuid
@@ -40,10 +42,9 @@ def generate_chunk_id(repository, file_path, chunk):
 
     return str(uuid.UUID(hash_value[:32]))
 
+
 # ============================================================
 # Cached components
-# Heavy ML imports are intentionally lazy-loaded so that
-# FastAPI can start without immediately loading PyTorch/models.
 # ============================================================
 
 @lru_cache(maxsize=1)
@@ -164,6 +165,7 @@ def index_repository(request: IndexRequest):
     from backend.app.ingestion.index_state import (
         get_indexed_commit_hash,
     )
+
     from backend.app.ingestion.reindex import (
         update_index_if_stale,
     )
@@ -182,15 +184,10 @@ def index_repository(request: IndexRequest):
             repo_path
         )
 
-        if (
-            indexed_commit
-            == latest_commit["commit_hash"]
-        ):
+        if indexed_commit == latest_commit["commit_hash"]:
             return IndexResponse(
                 repository=repository,
-                message=(
-                    "Repository is already up to date."
-                ),
+                message="Repository is already up to date.",
             )
 
         update_index_if_stale(
@@ -246,7 +243,7 @@ def index_repository(request: IndexRequest):
             message="No supported repository content found.",
         )
 
-    # Lazy-load the embedding model only when indexing is needed
+    # Lazy-load embeddings only when indexing is needed
     embedder = get_embedder()
 
     for chunk in chunks:
@@ -256,11 +253,10 @@ def index_repository(request: IndexRequest):
         )
 
         point_id = generate_chunk_id(
-        repository=repository,
-        file_path=chunk.file_path,
-        chunk=chunk,
-    )
-
+            repository=repository,
+            file_path=chunk.file_path,
+            chunk=chunk,
+        )
 
         vector_store.insert_chunk(
             point_id=point_id,
@@ -359,7 +355,6 @@ def ask_question(request: QuestionRequest):
 
     start = time.time()
 
-    # Heavy embedding model loads only when /ask is called
     embedder = get_embedder()
 
     vector_store = get_vector_store()
@@ -395,25 +390,20 @@ def ask_question(request: QuestionRequest):
 
     start = time.time()
 
-    # Heavy cross-encoder loads only when reranking is needed
-    reranker = get_reranker()
+    # Render free tier memory optimization:
+    # Skip local CrossEncoder inference.
+    # Hybrid retrieval results are already ranked.
 
-    results = reranker.rerank(
-        query=request.question,
-        results=results,
-        limit=3,
-    )
+    results = results[:3]
 
     print(
-        f"Reranking: "
+        f"Reranking skipped (memory optimization): "
         f"{time.time() - start:.2f}s"
     )
 
     if not results:
         return QuestionResponse(
-            answer=(
-                "No relevant repository context was found."
-            ),
+            answer="No relevant repository context was found.",
             citations=[],
         )
 
