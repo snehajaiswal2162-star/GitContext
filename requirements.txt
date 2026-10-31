@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+requests
+python-dotenv
+gitpython
+qdrant-client
+sentence-transformers
+transformers
+torch
+rank-bm25
+tree-sitter
+tree-sitter-python
+tree-sitter-javascript
+google-genai
+pydantic
