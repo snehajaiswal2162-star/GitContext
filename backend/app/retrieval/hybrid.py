@@ -1,8 +1,8 @@
+
 from backend.app.retrieval.bm_25 import BM25Retriever
 
 
 class HybridRetriever:
-
     def __init__(
         self,
         chunks,
@@ -18,132 +18,87 @@ class HybridRetriever:
 
     def chunk_key(self, chunk):
         return (
-            f"{chunk.file_path}:"
+            f"{str(chunk.file_path)}:"
             f"{chunk.symbol_name}:"
             f"{chunk.start_line}:"
             f"{chunk.end_line}"
         )
 
-    def normalize_scores(self, scores):
-        if not scores:
-            return {}
+    def search(self, query: str, limit: int = 3):
+        if not self.chunks:
+            return []
 
-        max_score = max(scores.values())
+        candidate_limit = min(30, len(self.chunks))
 
-        if max_score <= 0:
-            return {
-                key: 0.0
-                for key in scores
-            }
-
-        return {
-            key: value / max_score
-            for key, value in scores.items()
-        }
-
-    def search(
-        self,
-        query: str,
-        limit: int = 3,
-    ):
         query_vector = self.embedder.encode(query)
 
         semantic_results = self.vector_store.search(
             query_vector=query_vector,
-            limit=len(self.chunks),
+            limit=candidate_limit,
             repository=self.repository,
         )
 
         bm25_results = self.bm25.search(
             query=query,
-            limit=len(self.chunks),
+            limit=candidate_limit,
         )
 
-        semantic_scores = {}
+        chunks_by_key = {
+            self.chunk_key(chunk): chunk
+            for chunk in self.chunks
+        }
 
-        for result in semantic_results.points:
+        scores = {}
 
-            payload = result.payload
+        # Semantic ranking contribution.
+        for rank, point in enumerate(semantic_results.points, start=1):
+            payload = point.payload or {}
 
             key = (
-                f"{payload['file_path']}:"
-                f"{payload['symbol_name']}:"
-                f"{payload['start_line']}:"
-                f"{payload['end_line']}"
+                f"{str(payload.get('file_path', ''))}:"
+                f"{payload.get('symbol_name', '')}:"
+                f"{payload.get('start_line', '')}:"
+                f"{payload.get('end_line', '')}"
             )
 
-            semantic_scores[key] = result.score
+            if key not in chunks_by_key:
+                continue
 
-        bm25_scores = {}
+            scores.setdefault(key, {
+                "semantic_score": float(point.score),
+                "bm25_score": 0.0,
+                "hybrid_score": 0.0,
+            })
 
-        for result in bm25_results:
+            scores[key]["hybrid_score"] += 1.0 / (60 + rank)
 
+        # BM25 ranking contribution.
+        for rank, result in enumerate(bm25_results, start=1):
             chunk = result["chunk"]
-
             key = self.chunk_key(chunk)
 
-            bm25_scores[key] = result["score"]
+            if key not in chunks_by_key:
+                continue
 
-        normalized_semantic_scores = (
-            self.normalize_scores(
-                semantic_scores
-            )
-        )
+            scores.setdefault(key, {
+                "semantic_score": 0.0,
+                "bm25_score": 0.0,
+                "hybrid_score": 0.0,
+            })
 
-        normalized_bm25_scores = (
-            self.normalize_scores(
-                bm25_scores
-            )
-        )
+            scores[key]["bm25_score"] = float(result["score"])
+            scores[key]["hybrid_score"] += 1.0 / (60 + rank)
 
         combined_results = []
 
-        for chunk in self.chunks:
-
-            key = self.chunk_key(chunk)
-
-            semantic_score = semantic_scores.get(
-                key,
-                0.0,
-            )
-
-            bm25_score = bm25_scores.get(
-                key,
-                0.0,
-            )
-
-            normalized_semantic = (
-                normalized_semantic_scores.get(
-                    key,
-                    0.0,
-                )
-            )
-
-            normalized_bm25 = (
-                normalized_bm25_scores.get(
-                    key,
-                    0.0,
-                )
-            )
-
-            hybrid_score = (
-                0.7 * normalized_semantic
-                + 0.3 * normalized_bm25
-            )
-
-            combined_results.append(
-                {
-                    "chunk": chunk,
-                    "semantic_score": semantic_score,
-                    "bm25_score": bm25_score,
-                    "normalized_semantic": normalized_semantic,
-                    "normalized_bm25": normalized_bm25,
-                    "hybrid_score": hybrid_score,
-                }
-            )
+        for key, score_data in scores.items():
+            combined_results.append({
+                "chunk": chunks_by_key[key],
+                **score_data,
+            })
 
         combined_results.sort(
-            key=lambda result: result["hybrid_score"],
+            key=lambda item: item["hybrid_score"],
             reverse=True,
         )
 

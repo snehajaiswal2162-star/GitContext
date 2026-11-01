@@ -1,17 +1,26 @@
+
 import re
 
 from rank_bm25 import BM25Okapi
 
 
 def tokenize(text: str) -> list[str]:
+
+    # Split camelCase words
     text = re.sub(
         r"([a-z0-9])([A-Z])",
         r"\1 \2",
         text,
     )
 
-    text = text.replace("_", " ")
+    # Split snake_case and other separators
+    text = re.sub(
+        r"[_\-./\\]",
+        " ",
+        text,
+    )
 
+    # Extract lowercase tokens
     return re.findall(
         r"[a-zA-Z0-9]+",
         text.lower(),
@@ -25,12 +34,12 @@ class BM25Retriever:
         self.chunks = chunks
 
         documents = [
-                f"{chunk.symbol_name} "
-                f"{chunk.file_path} "
-                f"{chunk.chunk_type} "
-                f"{chunk.content}"
-                for chunk in chunks
-            ]
+            f"{chunk.symbol_name} "
+            f"{chunk.file_path} "
+            f"{chunk.chunk_type} "
+            f"{chunk.content}"
+            for chunk in chunks
+        ]
 
         tokenized_documents = [
             tokenize(document)
@@ -66,7 +75,7 @@ class BM25Retriever:
             results.append(
                 {
                     "chunk": self.chunks[index],
-                    "score": scores[index],
+                    "score": float(scores[index]),
                 }
             )
 
